@@ -168,20 +168,14 @@ A compliance receipt is only verifiable across systems if every party serializes
 
 Use the **JSON Canonicalization Scheme (JCS), [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)**, to produce a deterministic byte representation before hashing and signing. The signer canonicalizes, hashes (for example with SHA-256), then signs; every verifier canonicalizes the received receipt identically and checks the signature. This makes receipts verifiable by **any** counterparty, regulator, or downstream agent, not just the issuing system.
 
+This subsection proposes an implementation of that requirement rather than describing an existing standard. RFC 8785 (JCS) and RFC 8032 (Ed25519) are published IETF specifications, and the canonicalization and signature behaviors described below follow from them directly. The `action_ref` content address, the receipt field set, and the correlation pattern built on them are proposed patterns. No RFC, NIST publication, or published audit framework specifies them, and no conformance suite currently tests them. Treat them as one worked implementation of the underlying requirement rather than as a standard to conform to.
+
 ### Do
 
 - Canonicalize every receipt with RFC 8785 (JCS) before signing, and again before verifying.
 - Sign over the hash of the canonical bytes, not raw or pretty-printed JSON.
 - Record the canonicalization, hash, and signature algorithm in the receipt (for example `canon: jcs`, `alg: ecdsa-p256-sha256`) so any verifier can reproduce it.
-- Derive a stable **content address** (`action_ref`) for each action: `action_ref = HEX(SHA-256(JCS({agent_id, action_type, scope, timestamp_ms})))`. This 64-character hex string uniquely and recomputably identifies the action across systems, enabling cross-system receipt correlation without replaying the full event log. [OWASP Agentic Skills Top 10 AST09](https://github.com/OWASP/www-project-agentic-skills-top-10/blob/main/ast09.md) names `action_ref` as a "content-derived join key, independently recomputable" in the outcome receipt. It does not specify a construction. The SHA-256-over-JCS formula above is one way to satisfy that property and is a proposed pattern, not a standardised one.
-
-> **What in this section is standardised, and what is not.** RFC 8785 (JCS) and
-> RFC 8032 (Ed25519) are published IETF specifications, and the canonicalization and
-> signature behaviours described above follow from them directly. The `action_ref`
-> content address, the receipt field set, and the correlation pattern built on them are
-> proposed patterns. No RFC, NIST publication, or published audit framework specifies
-> them, and no conformance suite currently tests them. Treat them as one worked
-> implementation of the underlying requirement rather than as a standard to conform to.
+- Derive a stable **content address** (`action_ref`) for each action: `action_ref = HEX(SHA-256(JCS({agent_id, action_type, scope, timestamp_ms})))`. This 64-character hex string uniquely and recomputably identifies the action across systems, enabling cross-system receipt correlation without replaying the full event log. [OWASP Agentic Skills Top 10 AST09](https://github.com/OWASP/www-project-agentic-skills-top-10/blob/main/ast09.md) names `action_ref` as a "content-derived join key, independently recomputable" in the outcome receipt. It does not specify a construction. The SHA-256-over-JCS formula above is one way to satisfy that property and is a proposed pattern, not a standardized one.
 
 ### Don't
 
